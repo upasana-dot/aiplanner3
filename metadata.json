@@ -1,0 +1,5 @@
+{
+  "name": "AI Itinerary Planner",
+  "description": "Generate personalized travel itineraries using AI. Simply enter your destination, trip duration, interests, and budget to get a detailed day-by-day plan for your next adventure.",
+  "requestFramePermissions": []
+}
