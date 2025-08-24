@@ -30,6 +30,13 @@ export interface ItineraryData {
   destination: string;
   duration: string;
   summary: string;
+  heroImagePrompt: string;
+  heroImageUrl?: string;
   dailyPlan: DailyPlan[];
   soundscape: Soundscape;
+}
+
+export interface PlaceSuggestion {
+  name: string;
+  imageUrl: string;
 }

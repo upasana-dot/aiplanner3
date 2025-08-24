@@ -1,6 +1,5 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { ItineraryRequest, ItineraryData } from '../types';
+import { ItineraryRequest, ItineraryData, PlaceSuggestion } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable not set");
@@ -15,6 +14,7 @@ const responseSchema = {
     destination: { type: Type.STRING, description: "The primary destination city or region." },
     duration: { type: Type.STRING, description: "The total duration of the trip as specified by the user." },
     summary: { type: Type.STRING, description: "A brief, engaging 2-3 sentence summary of the trip plan." },
+    heroImagePrompt: { type: Type.STRING, description: "A stunning, cinematic, and photorealistic image prompt for the main destination. Example: 'A breathtaking panoramic aerial shot of the Santorini coastline at sunset, with whitewashed villages and blue domes.'" },
     dailyPlan: {
       type: Type.ARRAY,
       description: "An array of objects, where each object represents a single day's plan.",
@@ -55,7 +55,7 @@ const responseSchema = {
         required: ["theme", "melody"],
     }
   },
-  required: ["title", "destination", "duration", "summary", "dailyPlan", "soundscape"],
+  required: ["title", "destination", "duration", "summary", "heroImagePrompt", "dailyPlan", "soundscape"],
 };
 
 export const generateItineraryPlan = async (request: ItineraryRequest): Promise<ItineraryData> => {
@@ -74,13 +74,15 @@ export const generateItineraryPlan = async (request: ItineraryRequest): Promise<
     Instructions:
     1.  Create a catchy title for the trip.
     2.  Write a brief, engaging summary of the planned trip.
-    3.  Develop a day-by-day itinerary. For each day:
+    3.  Create a prompt for a beautiful hero image for the destination.
+    4.  Develop a day-by-day itinerary. For each day:
         - Provide a creative title that reflects the day's theme.
-        - List 3-5 activities for each day, appropriate for the destination and interests.
+        - List 3-5 activities for each day. The activities must be appropriate for the destination and user interests.
+        - The list of activities must include famous landmarks, historical sites, and unique cultural experiences specific to the destination (e.g., for Mathura, this could include the Krishna Janmabhoomi Temple and an evening aarti ceremony).
         - For each activity, specify a suggested time, a clear description, and a descriptive prompt for generating a photorealistic image.
         - Ensure the plan is logical, geographically sensible, and aligns with the specified budget.
-    4.  Create a 'soundscape' for the destination: provide a theme and a simple 4-6 note melody using notes like 'C4', 'F#5', etc.
-    5.  The overall tone should be enthusiastic and inspiring.
+    5.  Create a 'soundscape' for the destination: provide a theme and a simple 4-6 note melody using notes like 'C4', 'F#5', etc.
+    6.  The overall tone should be enthusiastic and inspiring.
   `;
 
   try {
@@ -121,4 +123,116 @@ export const generateImageForPrompt = async (prompt: string): Promise<string> =>
         console.error(`Error generating image for prompt "${prompt}":`, error);
         throw new Error("Failed to generate image.");
     }
+};
+
+const suggestionSchema = {
+    type: Type.OBJECT,
+    properties: {
+        suggestions: {
+            type: Type.ARRAY,
+            description: "A list of 5 potential travel destinations based on the user's query.",
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    name: { type: Type.STRING, description: "The full name of the suggested destination (e.g., 'Paris, France')." },
+                    imagePrompt: { type: Type.STRING, description: "A vibrant and appealing prompt to generate an image for this destination. Example: 'A beautiful watercolor painting of the Eiffel Tower at sunset'." },
+                },
+                required: ["name", "imagePrompt"]
+            }
+        }
+    },
+    required: ["suggestions"]
+}
+
+export const getPlaceSuggestions = async (query: string): Promise<PlaceSuggestion[]> => {
+    if (!query.trim()) {
+        return [];
+    }
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: `Based on the user query "${query}", generate a list of 5 travel destination suggestions. Provide a descriptive prompt to generate an image for each.`,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: suggestionSchema,
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const parsedData = JSON.parse(jsonText) as { suggestions: { name: string; imagePrompt: string }[] };
+        
+        if (!parsedData.suggestions) return [];
+
+        const suggestionsWithImages = await Promise.all(
+            parsedData.suggestions.map(async (suggestion) => {
+                try {
+                    const imageBytes = await generateImageForPrompt(suggestion.imagePrompt);
+                    return {
+                        name: suggestion.name,
+                        imageUrl: `data:image/jpeg;base64,${imageBytes}`,
+                    };
+                } catch (e) {
+                    console.error(`Failed to generate image for suggestion: ${suggestion.name}`, e);
+                    return {
+                        name: suggestion.name,
+                        imageUrl: `https://placehold.co/100x100/e2e8f0/64748b?text=Image`,
+                    };
+                }
+            })
+        );
+        return suggestionsWithImages;
+    } catch (error) {
+        console.error("Error fetching place suggestions:", error);
+        return [];
+    }
+};
+
+const generateAndPollVideo = async (videoPrompt: string, onProgress: (message: string) => void): Promise<string | null> => {
+    try {
+        onProgress("Warming up the virtual cameras...");
+        let operation = await ai.models.generateVideos({
+          model: 'veo-2.0-generate-001',
+          prompt: videoPrompt,
+          config: { numberOfVideos: 1 }
+        });
+        
+        onProgress("Scouting the best locations...");
+        while (!operation.done) {
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          operation = await ai.operations.getVideosOperation({operation: operation});
+          onProgress("Rendering your cinematic view...");
+        }
+
+        onProgress("Finalizing the video...");
+        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+        if (!downloadLink) throw new Error("Video URI not found.");
+        
+        const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+        if (!response.ok) throw new Error(`Failed to download video: ${response.statusText}`);
+        
+        const videoBlob = await response.blob();
+        return URL.createObjectURL(videoBlob);
+    } catch (error) {
+        console.error(`Error during video generation for prompt "${videoPrompt}":`, error);
+        return null;
+    }
+};
+
+export const generateRandomTravelVideo = async (onProgress: (message: string) => void): Promise<string | null> => {
+    try {
+        const promptResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: "Give me a single, concise prompt for generating a beautiful, cinematic, high-resolution aerial view video of a random, scenic, and peaceful travel destination in the world. Only return the prompt text itself, nothing else. For example: 'A beautiful, cinematic, high-resolution aerial view of the lavender fields in Provence, France. Peaceful and scenic.'",
+        });
+        const videoPrompt = promptResponse.text.trim();
+        return await generateAndPollVideo(videoPrompt, onProgress);
+    } catch(error) {
+        console.error(`Error generating random travel video prompt:`, error);
+        return null;
+    }
+};
+
+export const generateVideoForDestination = async (destination: string, onProgress: (message: string) => void): Promise<string | null> => {
+    const videoPrompt = `A beautiful, cinematic, high-resolution aerial view of ${destination}. Peaceful and scenic.`;
+    return await generateAndPollVideo(videoPrompt, onProgress);
 };

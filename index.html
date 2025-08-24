@@ -25,6 +25,28 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fade-in {
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(var(--tw-rotate)); opacity: 0.7; }
+      50% { transform: translateY(-20px) rotate(calc(var(--tw-rotate) + 5deg)); opacity: 1; }
+      100% { transform: translateY(0px) rotate(var(--tw-rotate)); opacity: 0.7; }
+    }
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes globe-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .animate-globe-spin {
+        animation: globe-spin 30s linear infinite;
+    }
   </style>
 </head>
   <body>

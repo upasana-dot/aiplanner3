@@ -10,7 +10,7 @@ interface ItineraryDisplayProps {
 }
 
 const ActivityCard: React.FC<{ activity: Activity }> = ({ activity }) => (
-    <div className="flex flex-col bg-slate-50/80 rounded-xl border border-slate-200/80 overflow-hidden shadow-sm">
+    <div className="flex flex-col bg-gray-50/80 rounded-xl border border-gray-200/80 overflow-hidden shadow-sm">
         {activity.imageUrl && (
             <img src={activity.imageUrl} alt={activity.description} className="w-full h-40 object-cover" />
         )}
@@ -19,10 +19,10 @@ const ActivityCard: React.FC<{ activity: Activity }> = ({ activity }) => (
                 <ClockIcon className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-                <p className="font-semibold text-slate-500">{activity.time}</p>
-                <p className="text-slate-800 font-medium">{activity.description}</p>
+                <p className="font-semibold text-gray-500">{activity.time}</p>
+                <p className="text-gray-800 font-medium">{activity.description}</p>
                 {activity.details && (
-                     <p className="text-sm text-slate-500 mt-1">{activity.details}</p>
+                     <p className="text-sm text-gray-600 mt-1">{activity.details}</p>
                 )}
             </div>
         </div>
@@ -30,14 +30,14 @@ const ActivityCard: React.FC<{ activity: Activity }> = ({ activity }) => (
 );
 
 const DayPlanCard: React.FC<{ dayPlan: DailyPlan }> = ({ dayPlan }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/80 transition-shadow hover:shadow-xl">
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200/80 transition-shadow hover:shadow-xl">
         <div className="flex items-center space-x-4 mb-6">
             <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-full text-white shadow-lg shadow-blue-500/30">
                 <SunIcon className="h-7 w-7" />
             </div>
             <div>
-                <h3 className="text-lg font-bold text-slate-500">Day {dayPlan.day}</h3>
-                <h2 className="text-2xl font-bold text-slate-800">{dayPlan.title}</h2>
+                <h3 className="text-lg font-bold text-gray-500">Day {dayPlan.day}</h3>
+                <h2 className="text-2xl font-bold text-gray-800">{dayPlan.title}</h2>
             </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -89,27 +89,39 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
   return (
     <div className="animate-fade-in space-y-8">
         <div id="itinerary-content">
-            <header className="text-center bg-white p-8 rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/80 relative">
-                <div className="absolute top-4 right-4 flex space-x-2">
-                    <button onClick={handlePlaySound} className="p-2 rounded-full bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 transition" title={`Play Soundscape: ${itinerary.soundscape.theme}`}>
-                        <MusicIcon className="h-5 w-5" />
-                    </button>
-                    <button onClick={handleDownloadPdf} className="p-2 rounded-full bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 transition" title="Download as PDF">
-                        <DownloadIcon className="h-5 w-5" />
-                    </button>
-                </div>
-                <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">{itinerary.title}</h1>
-                <div className="mt-4 flex items-center justify-center space-x-6 text-slate-600">
-                    <div className="flex items-center space-x-2">
-                        <MapPinIcon className="h-5 w-5 text-slate-500"/>
-                        <span>{itinerary.destination}</span>
+            <header className="bg-white text-center rounded-2xl shadow-xl shadow-gray-900/10 border border-gray-200/80 relative overflow-hidden">
+                {itinerary.heroImageUrl && (
+                  <div className="relative">
+                      <img src={itinerary.heroImageUrl} alt={itinerary.destination} className="w-full h-64 object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
+                  </div>
+                )}
+                
+                <div className={`relative ${itinerary.heroImageUrl ? `p-8 pt-4 text-white -mt-28` : 'p-8'}`}>
+                  <div className="absolute top-4 right-4 flex space-x-2">
+                      <button onClick={handlePlaySound} className={`p-2 rounded-full transition ${itinerary.heroImageUrl ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600'}`} title={`Play Soundscape: ${itinerary.soundscape.theme}`}>
+                          <MusicIcon className="h-5 w-5" />
+                      </button>
+                      <button onClick={handleDownloadPdf} className={`p-2 rounded-full transition ${itinerary.heroImageUrl ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600'}`} title="Download as PDF">
+                          <DownloadIcon className="h-5 w-5" />
+                      </button>
+                  </div>
+                  
+                  <div style={itinerary.heroImageUrl ? { textShadow: '0 2px 4px rgba(0,0,0,0.5)' } : {}}>
+                    <h1 className={`text-4xl font-extrabold tracking-tight ${itinerary.heroImageUrl ? 'text-white' : 'text-gray-800'}`}>{itinerary.title}</h1>
+                    <div className={`mt-4 flex items-center justify-center space-x-6 ${itinerary.heroImageUrl ? 'text-gray-200' : 'text-gray-600'}`}>
+                        <div className="flex items-center space-x-2">
+                            <MapPinIcon className="h-5 w-5"/>
+                            <span>{itinerary.destination}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <CalendarIcon className="h-5 w-5"/>
+                            <span>{itinerary.duration}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <CalendarIcon className="h-5 w-5 text-slate-500"/>
-                        <span>{itinerary.duration}</span>
-                    </div>
+                  </div>
+                  <p className={`mt-6 max-w-2xl mx-auto text-lg ${itinerary.heroImageUrl ? 'text-gray-100' : 'text-gray-700'}`} style={itinerary.heroImageUrl ? { textShadow: '0 1px 3px rgba(0,0,0,0.4)' } : {}}>{itinerary.summary}</p>
                 </div>
-                <p className="mt-6 max-w-2xl mx-auto text-lg text-slate-700">{itinerary.summary}</p>
             </header>
             
             <div className="space-y-6 mt-8">
