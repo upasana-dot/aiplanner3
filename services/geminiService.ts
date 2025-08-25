@@ -41,21 +41,20 @@ const responseSchema = {
         required: ["day", "title", "activities"],
       },
     },
-    soundscape: {
+    musicSuggestion: {
         type: Type.OBJECT,
-        description: "A sound theme for the destination.",
+        description: "A music suggestion themed to the destination.",
         properties: {
-            theme: { type: Type.STRING, description: "A short description of the soundscape theme. E.g., 'Calm Flute Melody', 'Tropical Beach Ambience'."},
-            melody: {
-                type: Type.ARRAY,
-                description: "A short, simple melody represented by an array of 4-6 musical notes (e.g., 'C4', 'G4'). Use only notes A-G, optional # for sharp, and octave number 3-5.",
-                items: { type: Type.STRING }
+            theme: { type: Type.STRING, description: "A short description of the music theme. E.g., 'Peaceful Krishna Bhajans', 'Epic Shiva Chants for Meditation', 'Relaxing Parisian Cafe Accordion Music'."},
+            search_query: {
+                type: Type.STRING,
+                description: "A concise search query to find this type of music on a platform like YouTube. E.g., 'instrumental krishna bhajans', 'kedarnath shiva chants', 'french accordion cafe music'."
             }
         },
-        required: ["theme", "melody"],
+        required: ["theme", "search_query"],
     }
   },
-  required: ["title", "destination", "duration", "summary", "heroImagePrompt", "dailyPlan", "soundscape"],
+  required: ["title", "destination", "duration", "summary", "heroImagePrompt", "dailyPlan", "musicSuggestion"],
 };
 
 export const generateItineraryPlan = async (request: ItineraryRequest): Promise<ItineraryData> => {
@@ -81,7 +80,7 @@ export const generateItineraryPlan = async (request: ItineraryRequest): Promise<
         - The list of activities must include famous landmarks, historical sites, and unique cultural experiences specific to the destination (e.g., for Mathura, this could include the Krishna Janmabhoomi Temple and an evening aarti ceremony).
         - For each activity, specify a suggested time, a clear description, and a descriptive prompt for generating a photorealistic image.
         - Ensure the plan is logical, geographically sensible, and aligns with the specified budget.
-    5.  Create a 'soundscape' for the destination: provide a theme and a simple 4-6 note melody using notes like 'C4', 'F#5', etc.
+    5.  Create a 'musicSuggestion' for the destination. If the destination is religious (like Mathura or Kedarnath), suggest appropriate devotional music. Otherwise, suggest ambient music that fits the location's vibe. Provide a theme description and a practical YouTube search query.
     6.  The overall tone should be enthusiastic and inspiring.
   `;
 
@@ -183,6 +182,65 @@ export const getPlaceSuggestions = async (query: string): Promise<PlaceSuggestio
         return suggestionsWithImages;
     } catch (error) {
         console.error("Error fetching place suggestions:", error);
+        return [];
+    }
+};
+
+const inspirationalPlacesSchema = {
+    type: Type.OBJECT,
+    properties: {
+        places: {
+            type: Type.ARRAY,
+            description: "A list of 8 beautiful and diverse travel destinations.",
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    name: { type: Type.STRING, description: "The full name of the destination (e.g., 'Kyoto, Japan')." },
+                    imagePrompt: { type: Type.STRING, description: "A vibrant, cinematic prompt for an image of this destination. Example: 'A serene Japanese garden in Kyoto with a red pagoda surrounded by cherry blossoms in full bloom, soft morning light.'" },
+                },
+                required: ["name", "imagePrompt"]
+            }
+        }
+    },
+    required: ["places"]
+}
+
+export const getInspirationalPlaces = async (): Promise<PlaceSuggestion[]> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: "Generate a list of 8 beautiful and diverse travel destinations from around the world. For each, provide its name and a stunning, cinematic image prompt.",
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: inspirationalPlacesSchema,
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const parsedData = JSON.parse(jsonText) as { places: { name: string; imagePrompt: string }[] };
+        
+        if (!parsedData.places) return [];
+
+        const placesWithImages = await Promise.all(
+            parsedData.places.map(async (place) => {
+                try {
+                    const imageBytes = await generateImageForPrompt(place.imagePrompt);
+                    return {
+                        name: place.name,
+                        imageUrl: `data:image/jpeg;base64,${imageBytes}`,
+                    };
+                } catch (e) {
+                    console.error(`Failed to generate image for inspirational place: ${place.name}`, e);
+                    return {
+                        name: place.name,
+                        imageUrl: `https://placehold.co/200x200/e2e8f0/64748b?text=Image`,
+                    };
+                }
+            })
+        );
+        return placesWithImages;
+    } catch (error) {
+        console.error("Error fetching inspirational places:", error);
         return [];
     }
 };

@@ -6,6 +6,10 @@ const noteToFreq: { [key: string]: number } = {
 };
 
 let audioContext: AudioContext | null = null;
+let oscillator: OscillatorNode | null = null;
+let gainNode: GainNode | null = null;
+let isPlaying = false;
+let noteTimeout: number | undefined;
 
 const getAudioContext = (): AudioContext => {
     if (!audioContext || audioContext.state === 'closed') {
@@ -13,6 +17,7 @@ const getAudioContext = (): AudioContext => {
     }
     return audioContext;
 };
+
 
 /**
  * Plays a sequence of musical notes using the Web Audio API.
@@ -54,4 +59,72 @@ export const playMelody = (melody: string[]): void => {
     } catch (e) {
         console.error("Could not play sound:", e);
     }
+};
+
+const melodySequence = [
+    { note: 'C4', duration: 1.5 }, { note: 'G4', duration: 1.5 }, { note: 'A4', duration: 1.5 },
+    { note: 'E4', duration: 1.5 }, { note: 'F4', duration: 1.5 }, { note: 'C4', duration: 1.5 },
+    { note: 'G4', duration: 1.5 }, { note: 'D4', duration: 1.5 },
+];
+
+let currentNoteIndex = 0;
+
+const scheduleNextNote = () => {
+    if (!isPlaying || !audioContext || !oscillator || !gainNode) return;
+
+    const { note, duration } = melodySequence[currentNoteIndex];
+    const freq = noteToFreq[note.toUpperCase()];
+    const currentTime = audioContext.currentTime;
+
+    if (freq) {
+        gainNode.gain.cancelScheduledValues(currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.0, currentTime + 0.01);
+        
+        oscillator.frequency.setValueAtTime(freq, currentTime + 0.02);
+
+        gainNode.gain.linearRampToValueAtTime(0.15, currentTime + 0.2); // Fade in to a low volume
+        gainNode.gain.linearRampToValueAtTime(0.0, currentTime + duration - 0.2); // Fade out
+    }
+    
+    currentNoteIndex = (currentNoteIndex + 1) % melodySequence.length;
+    noteTimeout = window.setTimeout(scheduleNextNote, duration * 1000);
+};
+
+export const playBackgroundMusic = (): void => {
+    if (isPlaying) return;
+    try {
+        const context = getAudioContext();
+        if (context.state === 'suspended') {
+            context.resume();
+        }
+
+        oscillator = context.createOscillator();
+        gainNode = context.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0, context.currentTime);
+        
+        isPlaying = true;
+        currentNoteIndex = 0;
+
+        oscillator.start();
+        scheduleNextNote();
+
+    } catch (e) {
+        console.error("Could not play music:", e);
+    }
+};
+
+export const stopBackgroundMusic = (): void => {
+    if (!isPlaying || !oscillator) return;
+    
+    clearTimeout(noteTimeout);
+    oscillator.stop();
+    oscillator.disconnect();
+    oscillator = null;
+    gainNode = null;
+    isPlaying = false;
 };

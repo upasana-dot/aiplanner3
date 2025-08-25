@@ -2,7 +2,6 @@ import React from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ItineraryData, DailyPlan, Activity } from '../types';
-import { playMelody } from '../utils/soundPlayer';
 import { CalendarIcon, ClockIcon, DownloadIcon, MapPinIcon, MusicIcon, SunIcon } from './Icons';
 
 interface ItineraryDisplayProps {
@@ -82,8 +81,14 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
     }
   };
 
-  const handlePlaySound = () => {
-    playMelody(itinerary.soundscape.melody);
+  const handleMusicSearch = () => {
+    const query = encodeURIComponent(itinerary.musicSuggestion.search_query);
+    window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+  };
+
+  const handleMapSearch = () => {
+    const query = encodeURIComponent(itinerary.destination);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
   };
 
   return (
@@ -99,7 +104,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
                 
                 <div className={`relative ${itinerary.heroImageUrl ? `p-8 pt-4 text-white -mt-28` : 'p-8'}`}>
                   <div className="absolute top-4 right-4 flex space-x-2">
-                      <button onClick={handlePlaySound} className={`p-2 rounded-full transition ${itinerary.heroImageUrl ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600'}`} title={`Play Soundscape: ${itinerary.soundscape.theme}`}>
+                      <button onClick={handleMusicSearch} className={`p-2 rounded-full transition ${itinerary.heroImageUrl ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600'}`} title={`Music: ${itinerary.musicSuggestion.theme}`}>
                           <MusicIcon className="h-5 w-5" />
                       </button>
                       <button onClick={handleDownloadPdf} className={`p-2 rounded-full transition ${itinerary.heroImageUrl ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600'}`} title="Download as PDF">
@@ -112,7 +117,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
                     <div className={`mt-4 flex items-center justify-center space-x-6 ${itinerary.heroImageUrl ? 'text-gray-200' : 'text-gray-600'}`}>
                         <div className="flex items-center space-x-2">
                             <MapPinIcon className="h-5 w-5"/>
-                            <span>{itinerary.destination}</span>
+                            <button onClick={handleMapSearch} className="hover:underline" title="View on Map">{itinerary.destination}</button>
                         </div>
                         <div className="flex items-center space-x-2">
                             <CalendarIcon className="h-5 w-5"/>

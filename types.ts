@@ -1,4 +1,5 @@
 
+
 export interface ItineraryRequest {
   destination: string;
   duration: string;
@@ -20,9 +21,9 @@ export interface DailyPlan {
   activities: Activity[];
 }
 
-export interface Soundscape {
+export interface MusicSuggestion {
     theme: string;
-    melody: string[];
+    search_query: string;
 }
 
 export interface ItineraryData {
@@ -33,10 +34,15 @@ export interface ItineraryData {
   heroImagePrompt: string;
   heroImageUrl?: string;
   dailyPlan: DailyPlan[];
-  soundscape: Soundscape;
+  musicSuggestion: MusicSuggestion;
 }
 
 export interface PlaceSuggestion {
   name: string;
   imageUrl: string;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
 }

@@ -47,6 +47,39 @@
     .animate-globe-spin {
         animation: globe-spin 30s linear infinite;
     }
+    @keyframes fly-across {
+        0% {
+            transform: translate(-20vw, 0) scale(0.3) rotate(-35deg);
+            opacity: 0.8;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translate(120vw, -120vh) scale(1.2) rotate(-35deg);
+            opacity: 0;
+        }
+    }
+    .animate-fly-across {
+        animation: fly-across 2.5s cubic-bezier(0.25, 0.1, 0.5, 1) forwards;
+    }
+    @keyframes fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+    .animate-fade-out {
+        animation: fade-out 0.5s ease-in-out forwards;
+    }
+    @keyframes move-across {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(2500%); }
+    }
+    .animate-move-across {
+        animation: move-across linear infinite;
+    }
   </style>
 </head>
   <body>
