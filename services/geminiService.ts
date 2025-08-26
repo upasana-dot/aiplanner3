@@ -12,7 +12,7 @@ const responseSchema = {
   properties: {
     title: { type: Type.STRING, description: "A catchy and descriptive title for the entire trip. Example: 'An Adventurous Week in the Swiss Alps'." },
     destination: { type: Type.STRING, description: "The primary destination city or region." },
-    duration: { type: Type.STRING, description: "The total duration of the trip as specified by the user." },
+    duration: { type: Type.STRING, description: "The date range of the trip, e.g., 'October 26, 2024 - November 2, 2024'." },
     summary: { type: Type.STRING, description: "A brief, engaging 2-3 sentence summary of the trip plan." },
     heroImagePrompt: { type: Type.STRING, description: "A stunning, cinematic, and photorealistic image prompt for the main destination. Example: 'A breathtaking panoramic aerial shot of the Santorini coastline at sunset, with whitewashed villages and blue domes.'" },
     dailyPlan: {
@@ -32,9 +32,13 @@ const responseSchema = {
                 time: { type: Type.STRING, description: "Suggested time for the activity (e.g., '9:00 AM', 'Afternoon', 'Evening')." },
                 description: { type: Type.STRING, description: "A concise description of the activity." },
                 details: { type: Type.STRING, description: "Optional: A few more details about the activity, like location, tips, or booking info." },
-                imagePrompt: { type: Type.STRING, description: "A descriptive prompt for a photorealistic image representing this activity. Example: 'A stunning, high-resolution photo of the Eiffel Tower from the Trocadéro Gardens at sunset'."}
+                imagePrompt: { type: Type.STRING, description: "A descriptive prompt for a photorealistic image representing this activity. Example: 'A stunning, high-resolution photo of the Eiffel Tower from the Trocadéro Gardens at sunset'."},
+                estimatedCost: { type: Type.STRING, description: "Estimated cost for the activity (e.g., '~$25 per person', 'Free entry', '$$$')." },
+                openingHours: { type: Type.STRING, description: "Opening and closing hours if applicable (e.g., '9:00 AM - 5:00 PM', '24 Hours', 'Varies')." },
+                mapUrl: { type: Type.STRING, description: "A direct Google Maps URL for the activity's location." },
+                travelInfo: { type: Type.STRING, description: "Estimated travel time and mode from the previous activity to this one. For the first activity of the day, this can be brief, like 'From your accommodation'."}
               },
-              required: ["time", "description", "imagePrompt"],
+              required: ["time", "description", "imagePrompt", "estimatedCost", "openingHours", "mapUrl", "travelInfo"],
             },
           },
         },
@@ -52,36 +56,84 @@ const responseSchema = {
             }
         },
         required: ["theme", "search_query"],
+    },
+    safetyTips: {
+      type: Type.ARRAY,
+      description: "A list of 3-5 important, location-specific safety tips for the destination.",
+      items: { type: Type.STRING }
+    },
+    culturalEtiquette: {
+      type: Type.ARRAY,
+      description: "A list of 3-5 key cultural etiquette points to be aware of at the destination.",
+      items: { type: Type.STRING }
+    },
+    localEmergencyContacts: {
+      type: Type.ARRAY,
+      description: "A list of essential local emergency contacts (e.g., Police, Ambulance).",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING, description: "Name of the service (e.g., 'Police', 'Ambulance', 'Tourist Help')." },
+          number: { type: Type.STRING, description: "The contact number." }
+        },
+        required: ["name", "number"]
+      }
+    },
+    weatherNotes: {
+      type: Type.STRING,
+      description: "A brief note on the typical weather for the specified dates and advice on what to pack."
     }
   },
-  required: ["title", "destination", "duration", "summary", "heroImagePrompt", "dailyPlan", "musicSuggestion"],
+  required: ["title", "destination", "duration", "summary", "heroImagePrompt", "dailyPlan", "musicSuggestion", "safetyTips", "culturalEtiquette", "localEmergencyContacts", "weatherNotes"],
 };
 
 export const generateItineraryPlan = async (request: ItineraryRequest): Promise<ItineraryData> => {
-  const { destination, duration, interests, budget } = request;
+  const { 
+    destination, startDate, endDate, numberOfTravelers, interests, budget, pace, 
+    travelerType, foodPreferences, transportMode, accessibilityNeeds 
+  } = request;
+
+  const interestsString = interests.join(', ');
+  const transportString = transportMode.join(', ');
+  const durationString = `${startDate} to ${endDate}`;
 
   const prompt = `
-    You are an expert travel planner. Your task is to create a personalized, detailed, and exciting travel itinerary based on the user's preferences.
-    The response must be structured according to the provided JSON schema.
+    You are an expert travel planner AI. Your task is to create a personalized, detailed, and exciting travel itinerary based on the user's specific and comprehensive preferences.
+    The response must be structured precisely according to the provided JSON schema.
 
     User Preferences:
     - Destination: ${destination}
-    - Trip Duration: ${duration}
-    - Interests: ${interests}
+    - Travel Dates: ${durationString}
+    - Number of Travelers: ${numberOfTravelers}
+    - Traveler Type: ${travelerType}
     - Budget: ${budget}
+    - Pace of Travel: ${pace}
+    - Main Interests: ${interestsString}
+    - Preferred Transportation: ${transportString}
+    - Food Preferences: ${foodPreferences || 'None specified'}
+    - Accessibility Needs: ${accessibilityNeeds ? 'Yes, requires accessible options' : 'No special requirements'}
 
     Instructions:
-    1.  Create a catchy title for the trip.
-    2.  Write a brief, engaging summary of the planned trip.
-    3.  Create a prompt for a beautiful hero image for the destination.
+    1.  Create a catchy title and engaging summary for the trip.
+    2.  Provide a date range string for the 'duration' field (e.g., "October 26, 2024 - November 2, 2024").
+    3.  Create a prompt for a beautiful, cinematic hero image for the destination.
     4.  Develop a day-by-day itinerary. For each day:
-        - Provide a creative title that reflects the day's theme.
-        - List 3-5 activities for each day. The activities must be appropriate for the destination and user interests.
-        - The list of activities must include famous landmarks, historical sites, and unique cultural experiences specific to the destination (e.g., for Mathura, this could include the Krishna Janmabhoomi Temple and an evening aarti ceremony).
-        - For each activity, specify a suggested time, a clear description, and a descriptive prompt for generating a photorealistic image.
-        - Ensure the plan is logical, geographically sensible, and aligns with the specified budget.
-    5.  Create a 'musicSuggestion' for the destination. If the destination is religious (like Mathura or Kedarnath), suggest appropriate devotional music. Otherwise, suggest ambient music that fits the location's vibe. Provide a theme description and a practical YouTube search query.
-    6.  The overall tone should be enthusiastic and inspiring.
+        - Provide a creative title.
+        - List 3-5 activities, respecting the user's preferred 'pace'.
+        - For each activity, you MUST provide:
+            - A suggested time.
+            - A clear description and optional details.
+            - A descriptive photorealistic image prompt.
+            - An estimated cost (e.g., '$25', 'Free', '$$').
+            - Opening hours ('9 AM - 5 PM', 'Varies', etc.).
+            - A full, valid Google Maps URL for the location.
+            - Estimated travel time and mode from the previous activity (e.g., "Approx. 15 min walk", "20 min by taxi ($10-15)").
+        - Ensure activities are logical, geographically sensible, and align with all user preferences (interests, budget, accessibility).
+    5.  Provide a 'musicSuggestion' that fits the destination's vibe.
+    6.  Provide a 'weatherNotes' section with packing advice based on the destination and travel dates.
+    7.  Provide separate, crucial 'safetyTips' and 'culturalEtiquette' lists (3-5 points each).
+    8.  List key 'localEmergencyContacts' with their names and numbers.
+    9.  The overall tone must be enthusiastic, helpful, and inspiring.
   `;
 
   try {
