@@ -28,7 +28,7 @@ const ActivityCard: React.FC<{ activity: Activity }> = ({ activity }) => (
                 <span><span className="font-semibold text-gray-700">{activity.time}:</span> {activity.openingHours}</span>
             </div>
             {activity.details && (
-                 <p className="text-sm text-gray-600">{activity.details}</p>
+                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{activity.details}</p>
             )}
             <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
                 <div className="flex items-center space-x-3 text-gray-600">
@@ -81,7 +81,7 @@ const TripEssentials: React.FC<{ itinerary: ItineraryData }> = ({ itinerary }) =
                         <h3 className="font-semibold text-gray-700">Safety Tips</h3>
                     </div>
                     <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                        {itinerary.safetyTips.map((tip, i) => <li key={i}>{tip}</li>)}
+                        {itinerary.safetyTips.map((tip, i) => <li key={i} className="whitespace-pre-wrap">{tip}</li>)}
                     </ul>
                 </div>
                 <div className="bg-gray-50/80 p-4 rounded-lg border">
@@ -90,7 +90,7 @@ const TripEssentials: React.FC<{ itinerary: ItineraryData }> = ({ itinerary }) =
                         <h3 className="font-semibold text-gray-700">Cultural Etiquette</h3>
                     </div>
                     <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                        {itinerary.culturalEtiquette.map((tip, i) => <li key={i}>{tip}</li>)}
+                        {itinerary.culturalEtiquette.map((tip, i) => <li key={i} className="whitespace-pre-wrap">{tip}</li>)}
                     </ul>
                 </div>
                 <div className="bg-gray-50/80 p-4 rounded-lg border">
@@ -109,7 +109,7 @@ const TripEssentials: React.FC<{ itinerary: ItineraryData }> = ({ itinerary }) =
                         <ThermometerIcon className="h-6 w-6 text-orange-500" />
                         <h3 className="font-semibold text-gray-700">Weather & Packing</h3>
                     </div>
-                    <p className="text-sm text-gray-600">{itinerary.weatherNotes}</p>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{itinerary.weatherNotes}</p>
                 </div>
             </div>
         </div>
@@ -210,7 +210,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
                         </div>
                     </div>
                   </div>
-                  <p className={`mt-6 max-w-2xl mx-auto text-lg ${itinerary.heroImageUrl ? 'text-gray-100' : 'text-gray-700'}`} style={itinerary.heroImageUrl ? { textShadow: '0 1px 3px rgba(0,0,0,0.4)' } : {}}>{itinerary.summary}</p>
+                  <p className={`mt-6 max-w-2xl mx-auto text-lg whitespace-pre-wrap ${itinerary.heroImageUrl ? 'text-gray-100' : 'text-gray-700'}`} style={itinerary.heroImageUrl ? { textShadow: '0 1px 3px rgba(0,0,0,0.4)' } : {}}>{itinerary.summary}</p>
                 </div>
             </header>
             
