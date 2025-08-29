@@ -5,6 +5,7 @@ import { playBackgroundMusic, stopBackgroundMusic } from '../utils/soundPlayer';
 import { SparklesIcon, MusicIcon, CompassIcon } from './Icons';
 import ChatWidget from './ChatWidget';
 import FeedbackWidget from './FeedbackWidget';
+import AnimatedStickers from './AnimatedStickers';
 
 interface DashboardProps {
     onLogin: (email: string) => void;
@@ -50,7 +51,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogin, isExiting }) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (email.trim() && password.trim()) {
-             if (!/\S+@\S+\.\S+/.test(email)) {
+            if (!/\S+@\S+\.\S+/.test(email)) {
                 setError('Please enter a valid email address.');
                 return;
             }
@@ -60,21 +61,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogin, isExiting }) => {
             setError('Please enter your email and password.');
         }
     };
-    
+
     const dashboardVideoUrl = dashboardVideos[videoIndex];
 
     return (
         <>
             <div className={`min-h-screen flex flex-col items-center justify-center transition-opacity duration-500 p-4 ${isExiting ? 'animate-fade-out' : 'animate-fade-in'}`}>
                 <Background videoUrl={dashboardVideoUrl} isDashboard={true} />
-                
+                <AnimatedStickers variant="dashboard" />
+
                 <header className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-30">
                     <div className="flex items-center space-x-3" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
                         <CompassIcon className="h-8 w-8 text-white/90" />
                         <span className="text-xl font-bold text-white tracking-tight">AI Itinerary Planner</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                         <button
+                        <button
                             onClick={() => setShowGallery(true)}
                             className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/30 transition"
                             title="Show inspiring places"
@@ -82,16 +84,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogin, isExiting }) => {
                             <SparklesIcon className="w-5 h-5" />
                             <span>Inspire Me</span>
                         </button>
-                        <button 
-                            onClick={handleMusicToggle} 
+                        <button
+                            onClick={handleMusicToggle}
                             className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition relative"
                             title={isMuted ? "Unmute Music" : "Mute Music"}
                         >
                             <MusicIcon className="w-5 h-5" />
                             {isMuted && (
-                               <svg className="absolute top-0 right-0 h-full w-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="absolute top-0 right-0 h-full w-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="4" y1="4" x2="20" y2="20"></line>
-                               </svg>
+                                </svg>
                             )}
                         </button>
                     </div>
@@ -137,10 +139,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogin, isExiting }) => {
             </div>
             {showGallery && <ImageGalleryModal onClose={() => setShowGallery(false)} />}
             {!isExiting && (
-              <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end space-y-4">
-                  <ChatWidget />
-                  <FeedbackWidget />
-              </div>
+                <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end space-y-4">
+                    <ChatWidget />
+                    <FeedbackWidget />
+                </div>
             )}
         </>
     );

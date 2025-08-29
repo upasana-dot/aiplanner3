@@ -51,11 +51,11 @@ export const playMelody = (melody: string[]): void => {
                 gainNode.gain.setValueAtTime(0, startTime + noteDuration);
             }
         });
-        
+
         const totalDuration = melody.length * (noteDuration + noteGap);
         oscillator.start();
         oscillator.stop(context.currentTime + totalDuration);
-        
+
     } catch (e) {
         console.error("Could not play sound:", e);
     }
@@ -80,13 +80,13 @@ const scheduleNextNote = () => {
         gainNode.gain.cancelScheduledValues(currentTime);
         gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
         gainNode.gain.linearRampToValueAtTime(0.0, currentTime + 0.01);
-        
+
         oscillator.frequency.setValueAtTime(freq, currentTime + 0.02);
 
         gainNode.gain.linearRampToValueAtTime(0.15, currentTime + 0.2); // Fade in to a low volume
         gainNode.gain.linearRampToValueAtTime(0.0, currentTime + duration - 0.2); // Fade out
     }
-    
+
     currentNoteIndex = (currentNoteIndex + 1) % melodySequence.length;
     noteTimeout = window.setTimeout(scheduleNextNote, duration * 1000);
 };
@@ -101,12 +101,12 @@ export const playBackgroundMusic = (): void => {
 
         oscillator = context.createOscillator();
         gainNode = context.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(context.destination);
         oscillator.type = 'sine';
         gainNode.gain.setValueAtTime(0, context.currentTime);
-        
+
         isPlaying = true;
         currentNoteIndex = 0;
 
@@ -120,7 +120,7 @@ export const playBackgroundMusic = (): void => {
 
 export const stopBackgroundMusic = (): void => {
     if (!isPlaying || !oscillator) return;
-    
+
     clearTimeout(noteTimeout);
     oscillator.stop();
     oscillator.disconnect();

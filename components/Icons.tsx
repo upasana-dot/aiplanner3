@@ -1,8 +1,8 @@
 import React from 'react';
 
 type IconProps = {
-  className?: string;
-  [key: string]: any; // Allow other props
+    className?: string;
+    [key: string]: any; // Allow other props
 };
 
 export const CompassIcon: React.FC<IconProps> = ({ className }) => (
@@ -20,25 +20,25 @@ export const PlaneIcon: React.FC<IconProps> = ({ className }) => (
 
 export const TrainIcon: React.FC<IconProps> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M16 8h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h4"/>
-      <path d="M12 2v6"/>
-      <path d="m8 10-2 4"/>
-      <path d="m16 10 2 4"/>
-      <path d="M3 16h18"/>
-      <circle cx="8" cy="20" r="2"/>
-      <circle cx="16" cy="20" r="2"/>
+        <path d="M16 8h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h4" />
+        <path d="M12 2v6" />
+        <path d="m8 10-2 4" />
+        <path d="m16 10 2 4" />
+        <path d="M3 16h18" />
+        <circle cx="8" cy="20" r="2" />
+        <circle cx="16" cy="20" r="2" />
     </svg>
 );
 
 export const BusIcon: React.FC<IconProps> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M6 17H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1.33"/>
-      <path d="M15 7H9"/>
-      <path d="M19 17h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.4"/>
-      <path d="m22 12-2.45-3.68A2 2 0 0 0 17.7 7H6.3a2 2 0 0 0-1.85 1.32L2 12"/>
-      <path d="M8 12h8"/>
-      <circle cx="7.5" cy="17.5" r="2.5"/>
-      <circle cx="16.5" cy="17.5" r="2.5"/>
+        <path d="M6 17H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1.33" />
+        <path d="M15 7H9" />
+        <path d="M19 17h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.4" />
+        <path d="m22 12-2.45-3.68A2 2 0 0 0 17.7 7H6.3a2 2 0 0 0-1.85 1.32L2 12" />
+        <path d="M8 12h8" />
+        <circle cx="7.5" cy="17.5" r="2.5" />
+        <circle cx="16.5" cy="17.5" r="2.5" />
     </svg>
 );
 

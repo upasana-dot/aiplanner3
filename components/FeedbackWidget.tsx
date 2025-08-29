@@ -11,7 +11,7 @@ const FeedbackWidget: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (rating === 0 && !feedback.trim()) return;
-        
+
         console.log("Feedback submitted:", { rating, feedback });
         setIsSubmitted(true);
 
@@ -36,12 +36,12 @@ const FeedbackWidget: React.FC = () => {
                 <FeedbackIcon className="w-8 h-8" />
             </button>
             {isOpen && (
-                <div className="fixed bottom-24 right-6 w-full max-w-sm bg-white rounded-2xl shadow-2xl animate-fade-in z-40 border border-gray-200">
-                    <header className="bg-gray-100 p-4 rounded-t-2xl border-b border-gray-200 flex justify-between items-center">
+                <div className="fixed bottom-24 right-6 w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl animate-fade-in z-40 ring-1 ring-black/5">
+                    <header className="bg-gray-100/80 p-4 rounded-t-3xl border-b border-gray-200 flex justify-between items-center">
                         <h3 className="font-bold text-lg text-gray-800">Share Your Feedback</h3>
-                         <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-800 font-bold text-2xl">&times;</button>
+                        <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-800 font-bold text-2xl">&times;</button>
                     </header>
-                    
+
                     {isSubmitted ? (
                         <div className="p-8 text-center">
                             <h4 className="text-2xl font-bold text-emerald-600">Thank You!</h4>
@@ -68,7 +68,7 @@ const FeedbackWidget: React.FC = () => {
                                 type="submit"
                                 className="w-full bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-emerald-700 disabled:bg-emerald-300 transition"
                             >
-                                Done
+                                Submit Feedback
                             </button>
                         </form>
                     )}
